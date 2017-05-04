@@ -3,6 +3,9 @@ package org.jetbrains.test;
 import java.util.List;
 import java.util.Random;
 
+import static org.jetbrains.test.CallTreeConstructor.registerFinish;
+import static org.jetbrains.test.CallTreeConstructor.registerStart;
+
 /**
  * Nikolay.Tropin
  * 18-Apr-17
@@ -37,6 +40,7 @@ public class DummyApplication {
     }
 
     private void abc(String s) {
+        registerStart();
         //your code here
 
         sleep();
@@ -49,9 +53,11 @@ public class DummyApplication {
         else {
             xyz(nextArg());
         }
+        registerFinish();
     }
 
     private void def(String s) {
+        registerStart();
         //your code here
 
         sleep();
@@ -64,10 +70,11 @@ public class DummyApplication {
         else {
             xyz(nextArg());
         }
+        registerFinish();
     }
 
     private void xyz(String s) {
-        //your code here
+        registerStart();
 
         sleep();
         if (stop()) {
@@ -79,9 +86,11 @@ public class DummyApplication {
         else {
             def(nextArg());
         }
+        registerFinish();
     }
 
     public void start() {
         abc(nextArg());
     }
 }
+
