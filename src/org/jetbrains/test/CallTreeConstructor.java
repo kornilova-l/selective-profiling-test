@@ -1,5 +1,7 @@
 package org.jetbrains.test;
 
+import com.alibaba.fastjson.JSON;
+
 import java.util.*;
 
 /**
@@ -24,7 +26,7 @@ public class CallTreeConstructor {
         synchronized (threads) { // avoid race condition
             CallTree callTree = threads.get(thread.hashCode()); // get tree of current thread
             if (callTree == null) { // if there is no tree for this thread
-                    threads.put(thread.hashCode(), new CallTree(thread, methodName, time));
+                threads.put(thread.hashCode(), new CallTree(thread, methodName, time));
             } else {
                 callTree.startMethod(methodName, time);
             }
@@ -36,23 +38,16 @@ public class CallTreeConstructor {
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
         synchronized (threads) { // avoid race condition
-            threads.get(thread.hashCode()).finishMethod(methodName, time);
+            threads.get(thread.hashCode()).finishMethod(time);
         }
     }
 
-    static String getString() {
+    static String generateString() {
         StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
             stringBuilder.append(threadTree.getValue());
         }
         return stringBuilder.toString();
-    }
-
-    static String getJson() {
-        for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
-            System.out.println(threadTree.getValue());
-        }
-        return " ";
     }
 
     static void clear() {
@@ -62,7 +57,7 @@ public class CallTreeConstructor {
     static boolean isCorrect() {
         Set<Map.Entry<Integer, CallTree>> threadTreeSet = threads.entrySet();
 //        if (threadTreeSet.size() != 3) {
-            System.out.println("count threads: " + threadTreeSet.size());
+        System.out.println("count threads: " + threadTreeSet.size());
 //            return false;
 //        }
         for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
@@ -72,12 +67,25 @@ public class CallTreeConstructor {
         }
         return true;
     }
+
+    static String generateJson() {
+        return JSON.toJSONString(threads);
+    }
 }
 
 class CallTree {
     private String threadName;
     private LinkedList<Node> calls;
     private long startTreadTime;
+
+    public String getThreadName() {
+        return threadName;
+    }
+
+    public LinkedList<Node> getCalls() {
+        return calls;
+    }
+
     /**
      * Create starting node
      */
@@ -98,6 +106,22 @@ class CallTree {
         private boolean isFinished = false;
         private long startTime;
         private long finishTime;
+
+        public String getMethodName() {
+            return methodName;
+        }
+
+        public LinkedList<Node> getChildCalls() {
+            return childCalls;
+        }
+
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public long getFinishTime() {
+            return finishTime;
+        }
 
         Node(String methodName, long time) {
             this.methodName = methodName;
@@ -134,7 +158,7 @@ class CallTree {
 
         @Override
         public String toString() {
-            return methodName + " start: " + startTime + " finish: " + finishTime;
+            return methodName;
         }
     }
 
@@ -148,8 +172,7 @@ class CallTree {
         Node lastUnfinished = getLastUnfinished();
         if (lastUnfinished == null) {
             calls.addLast(new Node(methodName, time));
-        }
-        else {
+        } else {
             lastUnfinished.addChild(new Node(methodName, time));
         }
     }
@@ -168,7 +191,7 @@ class CallTree {
         return lastUnfinished;
     }
 
-    void finishMethod(String methodName, long time) {
+    void finishMethod(long time) {
         Node lastUnfinished = getLastUnfinished();
         if (lastUnfinished == null) {
             return;
@@ -181,8 +204,9 @@ class CallTree {
      * Form string recursively
      * add to string current node
      * call this method on all childCalls
-     * @param current node
-     * @param depth depth of recursion (specifies amount of tabs being added to string)
+     *
+     * @param current     node
+     * @param depth       depth of recursion (specifies amount of tabs being added to string)
      * @param finalString string being built
      */
     private void buildStringRecursively(Node current, int depth, StringBuilder finalString) {
@@ -199,7 +223,7 @@ class CallTree {
     @Override
     public String toString() {
         StringBuilder finalString = new StringBuilder();
-        finalString.append(threadName + ":\n");
+        finalString.append(threadName).append(":\n");
         for (Node node : calls) {
             buildStringRecursively(node, 0, finalString);
         }
