@@ -16,7 +16,7 @@ public class CallTreeConstructor {
      * search for last finished node
      * - add new node after it
      */
-    public static void registerStart() {
+    static void registerStart() {
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
 
@@ -36,7 +36,7 @@ public class CallTreeConstructor {
         }
     }
 
-    public static void registerFinish() {
+    static void registerFinish() {
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
         synchronized (threads) {
@@ -44,23 +44,26 @@ public class CallTreeConstructor {
         }
     }
 
-    public static void print() {
+    static String getString() {
+        StringBuilder stringBuilder = new StringBuilder();
         for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
-            threadTree.getValue().print();
+            stringBuilder.append(threadTree.getValue());
         }
+        return stringBuilder.toString();
     }
 
-    public static void printToFile(String fileName) {
+    static String getJson() {
         for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
             System.out.println(threadTree.getValue());
         }
+        return " ";
     }
 
-    public static void clear() {
+    static void clear() {
         threads.clear();
     }
 
-    public static boolean isCorrect() {
+    static boolean isCorrect() {
         Set<Map.Entry<Integer, CallTree>> threadTreeSet = threads.entrySet();
 //        if (threadTreeSet.size() != 3) {
             System.out.println("count threads: " + threadTreeSet.size());
@@ -117,6 +120,11 @@ class CallTree {
             }
             System.out.println(methodName);
         }
+
+        @Override
+        public String toString() {
+            return methodName;
+        }
     }
     private Node startNode;
     /**
@@ -133,7 +141,7 @@ class CallTree {
      * (there is always at least one unfinished node because we created starting node for thread)
      * append new node to list of children of this not finished node
      */
-    public void addNode(String methodName) {
+    void addNode(String methodName) {
         Node lastUnfinished = getLastUnfinished();
         lastUnfinished.addChild(new Node(methodName));
     }
@@ -149,35 +157,33 @@ class CallTree {
         return lastUnfinished;
     }
 
-    public void finishMethod(String methodName) {
+    void finishMethod(String methodName) {
         getLastUnfinished().isFinished = true;
     }
 
-    public void print() {
-        System.out.println("Thread: " + startNode.methodName);
-        printRecursively(startNode, startNode.children.getFirst(), 1);
-    }
-
-    private void printRecursively(Node parent, Node current, int depth) {
-        if (current == null) {
-            return;
+    /**
+     * Form string recursively
+     * add to string current node
+     * call this method on all children
+     * @param current node
+     * @param depth depth of recursion (specifies amount of tabs being added to string)
+     * @param finalString string being built
+     */
+    private void buildStringRecursively(Node current, int depth, StringBuilder finalString) {
+        finalString.append("\n");
+        for (int i = 0; i < depth; i++) {
+            finalString.append("  ");
         }
-        current.print(depth);
-        printRecursively(current, current.getFirstChild(), depth + 1);
-        int nextNodeIndex = parent.children.indexOf(current) + 1;
-        try {
-            Node nextNode = parent.children.get(nextNodeIndex);
-            if (nextNode != null) {
-                printRecursively(parent, nextNode, depth);
-            }
-        }
-        catch (Exception e) {
-            return;
+        finalString.append(current);
+        for (Node child : current.children) {
+            buildStringRecursively(child, depth + 1, finalString);
         }
     }
 
     @Override
     public String toString() {
-        return startNode.methodName + " hello";
+        StringBuilder finalString = new StringBuilder();
+        buildStringRecursively(startNode.children.getFirst(), 0, finalString);
+        return finalString.toString();
     }
 }
