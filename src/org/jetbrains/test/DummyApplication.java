@@ -33,7 +33,7 @@ public class DummyApplication {
 
     private void sleep() {
         try {
-            Thread.sleep(random.nextInt(20));
+            Thread.sleep(random.nextInt(5));
         } catch (InterruptedException ignored) {
 
         }
@@ -45,6 +45,7 @@ public class DummyApplication {
 
         sleep();
         if (stop()) {
+            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -62,6 +63,7 @@ public class DummyApplication {
 
         sleep();
         if (stop()) {
+            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -78,6 +80,7 @@ public class DummyApplication {
 
         sleep();
         if (stop()) {
+            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -89,8 +92,16 @@ public class DummyApplication {
         registerFinish();
     }
 
+    public void doFinish() {
+        registerStart();
+        registerFinish();
+    }
+
     public void start() {
+        registerStart();
+//        doStart();
         abc(nextArg());
+        registerFinish();
     }
 }
 

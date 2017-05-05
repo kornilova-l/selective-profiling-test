@@ -1,15 +1,13 @@
 package org.jetbrains.test;
 
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by Liudmila Kornilova
  * on 04.05.17.
  */
 public class CallTreeConstructor {
-    private static HashMap<Integer, CallTree> threads = new HashMap<>(); // map thread's ids to call-trees
+    private static final HashMap<Integer, CallTree> threads = new HashMap<>(); // map thread's ids to call-trees
 
     /**
      * Record start of function
@@ -22,21 +20,28 @@ public class CallTreeConstructor {
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
 
-        CallTree callTree = threads.get(thread.hashCode()); // get tree of current thread
+        synchronized (threads) {
+            CallTree callTree = threads.get(thread.hashCode()); // get tree of current thread
 
-        if (callTree == null) { // if there is no tree for this thread
-            threads.put(thread.hashCode(), new CallTree(thread, methodName));
-        } else {
-            callTree.addNode(methodName);
-        }
+            if (callTree == null) { // if there is no tree for this thread
+            /*  there may be problems if two threads will put element to static HashMap
+                so HashMap must be synchronized
+             */
+                    threads.put(thread.hashCode(), new CallTree(thread, methodName));
+            } else {
+                callTree.addNode(methodName);
+            }
 //        System.out.println("RecordStart. " + Thread.currentThread() + " Method: " +
 //                Thread.currentThread().getStackTrace()[2]);
+        }
     }
 
     public static void registerFinish() {
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
-        threads.get(thread.hashCode()).finishMethod(methodName);
+        synchronized (threads) {
+            threads.get(thread.hashCode()).finishMethod(methodName);
+        }
     }
 
     public static void print() {
@@ -44,9 +49,37 @@ public class CallTreeConstructor {
             threadTree.getValue().print();
         }
     }
+
+    public static void printToFile(String fileName) {
+        for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
+            System.out.println(threadTree.getValue());
+        }
+    }
+
+    public static void clear() {
+        threads.clear();
+    }
+
+    public static boolean isCorrect() {
+        Set<Map.Entry<Integer, CallTree>> threadTreeSet = threads.entrySet();
+//        if (threadTreeSet.size() != 3) {
+            System.out.println("count threads: " + threadTreeSet.size());
+//            return false;
+//        }
+        for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
+            if (!threadTree.getValue().isCorrect()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 
 class CallTree {
+
+    boolean isCorrect() {
+        return Objects.equals(startNode.children.getFirst().methodName, "start");
+    }
 
     private static class Node {
         private String methodName;
@@ -90,7 +123,7 @@ class CallTree {
      * Create starting node
      */
     CallTree(Thread thread, String methodName) {
-        startNode = new Node("Start of thread \"" + thread.getName() + "\"");
+        startNode = new Node("\"" + thread.getName() + "\"");
         startNode.children.addFirst(new Node(methodName));
     }
 
@@ -141,6 +174,10 @@ class CallTree {
         catch (Exception e) {
             return;
         }
+    }
 
+    @Override
+    public String toString() {
+        return startNode.methodName + " hello";
     }
 }
