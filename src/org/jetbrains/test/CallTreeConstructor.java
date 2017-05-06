@@ -36,7 +36,6 @@ public class CallTreeConstructor {
     static void registerFinish() {
         long time = System.nanoTime(); // get time before synchronized block
         Thread thread = Thread.currentThread();
-        String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
         synchronized (threads) { // avoid race condition
             threads.get(thread.hashCode()).finishMethod(time);
         }
@@ -56,10 +55,7 @@ public class CallTreeConstructor {
 
     static boolean isCorrect() {
         Set<Map.Entry<Integer, CallTree>> threadTreeSet = threads.entrySet();
-//        if (threadTreeSet.size() != 3) {
         System.out.println("count threads: " + threadTreeSet.size());
-//            return false;
-//        }
         for (Map.Entry<Integer, CallTree> threadTree : threads.entrySet()) {
             if (!threadTree.getValue().isCorrect()) {
                 return false;
@@ -102,7 +98,7 @@ class CallTree {
 
     private class Node {
         private String methodName;
-        private LinkedList<Node> childCalls = new LinkedList<>();
+        private LinkedList<Node> calls = new LinkedList<>();
         private boolean isFinished = false;
         private long startTime;
         private long finishTime;
@@ -111,8 +107,8 @@ class CallTree {
             return methodName;
         }
 
-        public LinkedList<Node> getChildCalls() {
-            return childCalls;
+        public LinkedList<Node> getCalls() {
+            return calls;
         }
 
         public long getStartTime() {
@@ -132,28 +128,14 @@ class CallTree {
             if (isFinished) {
                 throw new IndexOutOfBoundsException("you cannot append child to finished node!");
             }
-            childCalls.add(newNode);
+            calls.add(newNode);
         }
 
         Node getLastChild() {
-            if (!childCalls.isEmpty()) {
-                return childCalls.getLast();
+            if (!calls.isEmpty()) {
+                return calls.getLast();
             }
             return null;
-        }
-
-        Node getFirstChild() {
-            if (!childCalls.isEmpty()) {
-                return childCalls.getFirst();
-            }
-            return null;
-        }
-
-        public void print(int depth) {
-            for (int i = 0; i < depth; i++) {
-                System.out.print("  ");
-            }
-            System.out.println(methodName);
         }
 
         @Override
@@ -166,7 +148,7 @@ class CallTree {
      * Add function to call-tree of current
      * get last not finished node (new method will become a child of this node)
      * (there is always at least one unfinished node because we created starting node for thread)
-     * append new node to list of childCalls of this not finished node
+     * append new node to list of calls of this not finished node
      */
     void startMethod(String methodName, long time) {
         Node lastUnfinished = getLastUnfinished();
@@ -203,7 +185,7 @@ class CallTree {
     /**
      * Form string recursively
      * add to string current node
-     * call this method on all childCalls
+     * call this method on all calls
      *
      * @param current     node
      * @param depth       depth of recursion (specifies amount of tabs being added to string)
@@ -215,7 +197,7 @@ class CallTree {
             finalString.append("  ");
         }
         finalString.append(current); // add name of method to string
-        for (Node child : current.childCalls) { // call all childCalls
+        for (Node child : current.calls) { // call all calls
             buildStringRecursively(child, depth + 1, finalString);
         }
     }
