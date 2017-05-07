@@ -1,6 +1,7 @@
 package org.jetbrains.test;
 
 import com.alibaba.fastjson.JSON;
+import com.google.gson.Gson;
 
 import java.util.*;
 
@@ -8,6 +9,9 @@ import java.util.*;
  * Created by Liudmila Kornilova
  * on 04.05.17.
  */
+
+// Todo: add classname to methods
+
 public class CallTreeConstructor {
     private static final HashMap<Integer, CallTree> threads = new HashMap<>(); // map thread's ids to call-trees
 
@@ -22,13 +26,14 @@ public class CallTreeConstructor {
         long time = System.nanoTime(); // get time before synchronized block
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
+        String className = thread.getStackTrace()[2].getClassName(); // get function which called this method
 
         synchronized (threads) { // avoid race condition
             CallTree callTree = threads.get(thread.hashCode()); // get tree of current thread
             if (callTree == null) { // if there is no tree for this thread
-                threads.put(thread.hashCode(), new CallTree(thread, methodName, time));
+                threads.put(thread.hashCode(), new CallTree(thread, methodName, className, time)); // todo: separate creation of tree and adding method
             } else {
-                callTree.startMethod(methodName, time);
+                callTree.startMethod(methodName, className, time);
             }
         }
     }
@@ -65,14 +70,15 @@ public class CallTreeConstructor {
     }
 
     static String generateJson() {
-        return JSON.toJSONString(threads);
+        return new Gson().toJson(threads);
     }
 }
 
 class CallTree {
     private String threadName;
     private LinkedList<Node> calls;
-    private long startTreadTime;
+    private long startThreadTime;
+    private long duration;
 
     public String getThreadName() {
         return threadName;
@@ -82,14 +88,22 @@ class CallTree {
         return calls;
     }
 
+    public long getStartThreadTime() {
+        return startThreadTime;
+    }
+
+    public long getDuration() {
+        return duration;
+    }
+
     /**
      * Create starting node
      */
-    CallTree(Thread thread, String methodName, long startTreadTime) {
+    CallTree(Thread thread, String methodName, String className, long startTreadTime) {
         threadName = thread.getName();
         calls = new LinkedList<>();
-        this.startTreadTime = startTreadTime;
-        calls.addFirst(new Node(methodName, startTreadTime));
+        this.startThreadTime = startTreadTime;
+        calls.addFirst(new Node(methodName, className, startTreadTime));
     }
 
     boolean isCorrect() {
@@ -97,11 +111,12 @@ class CallTree {
     }
 
     private class Node {
-        private String methodName;
-        private LinkedList<Node> calls = new LinkedList<>();
+        private final String methodName;
+        private final String className;
+        private final LinkedList<Node> calls = new LinkedList<>();
         private boolean isFinished = false;
-        private long startTime;
-        private long finishTime;
+        private final long startTime;
+        private long duration;
 
         public String getMethodName() {
             return methodName;
@@ -115,19 +130,21 @@ class CallTree {
             return startTime;
         }
 
-        public long getFinishTime() {
-            return finishTime;
+        public long getDuration() {
+            return duration;
         }
 
-        Node(String methodName, long time) {
+        public String getClassName() {
+            return className;
+        }
+
+        Node(String methodName, String className, long time) {
             this.methodName = methodName;
-            this.startTime = time - startTreadTime;
+            this.startTime = time - CallTree.this.startThreadTime;
+            this.className = className;
         }
 
         void addChild(Node newNode) {
-            if (isFinished) {
-                throw new IndexOutOfBoundsException("you cannot append child to finished node!");
-            }
             calls.add(newNode);
         }
 
@@ -150,12 +167,12 @@ class CallTree {
      * (there is always at least one unfinished node because we created starting node for thread)
      * append new node to list of calls of this not finished node
      */
-    void startMethod(String methodName, long time) {
+    void startMethod(String methodName, String className, long time) {
         Node lastUnfinished = getLastUnfinished();
         if (lastUnfinished == null) {
-            calls.addLast(new Node(methodName, time));
+            calls.addLast(new Node(methodName, className, time));
         } else {
-            lastUnfinished.addChild(new Node(methodName, time));
+            lastUnfinished.addChild(new Node(methodName, className, time));
         }
     }
 
@@ -179,7 +196,8 @@ class CallTree {
             return;
         }
         lastUnfinished.isFinished = true;
-        lastUnfinished.finishTime = time - startTreadTime;
+        lastUnfinished.duration = time - startThreadTime - lastUnfinished.startTime;
+        duration = time - startThreadTime; // update thread duration because each method may be last in sequence
     }
 
     /**
