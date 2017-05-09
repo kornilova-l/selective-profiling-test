@@ -24,7 +24,7 @@ import static org.jetbrains.test.CallTreeConstructor.registerStart;
 
 public class TestApplication {
     private void fun1() throws InterruptedException {
-        registerStart();
+        registerStart("arg1");
         Thread.sleep(3);
         fun3();
         Thread.sleep(5);
@@ -32,13 +32,13 @@ public class TestApplication {
     }
 
     private void fun2() throws InterruptedException {
-        registerStart();
+        registerStart("arg2");
         Thread.sleep(10);
         registerFinish();
     }
 
     private void fun3() throws InterruptedException {
-        registerStart();
+        registerStart("arg3");
         Thread.sleep(3);
         fun4();
         Thread.sleep(3);
@@ -48,13 +48,13 @@ public class TestApplication {
     }
 
     private void fun4() throws InterruptedException {
-        registerStart();
+        registerStart("arg4");
         Thread.sleep(20);
         registerFinish();
     }
 
     private void fun5() throws InterruptedException {
-        registerStart();
+        registerStart("arg5");
         Thread.sleep(40);
         fun6();
         Thread.sleep(10);
@@ -62,13 +62,13 @@ public class TestApplication {
     }
 
     private void fun6() throws InterruptedException {
-        registerStart();
+        registerStart("arg6");
         Thread.sleep(15);
         registerFinish();
     }
 
     public void start() throws InterruptedException {
-        registerStart();
+        registerStart("");
         Thread.sleep(20);
         fun1();
         Thread.sleep(30);

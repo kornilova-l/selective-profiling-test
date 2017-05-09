@@ -110,7 +110,8 @@ class CallTree {
      * @private
      */
     createPopup_(newLi, childNode) {
-        const popup = $(CallTree.generatePopup_(childNode.methodName, childNode.className, childNode.startTime, childNode.duration))
+        const popup = $(CallTree.generatePopup_(childNode.methodName, childNode.className,
+            childNode.startTime, childNode.duration, childNode.arg))
             .appendTo($("." + this.name));
         newLi.bind("mousemove", (e) => {
             newLi.css("background", "#5457FF"); // highlight current <li> element
@@ -133,10 +134,11 @@ class CallTree {
      * @returns {string}
      * @private
      */
-    static generatePopup_(methodName, className, startTime, duration) {
+    static generatePopup_(methodName, className, startTime, duration, arg) {
         return '<div class="detail"><h3>' + className + ".<b>" + methodName + '</b></h3>' +
             '<p>Start time: ' + Math.round(startTime / 10000) / 100 + ' ms</p>' +
-            '<p>Duration: ' + Math.round(duration / 10000) / 100 + ' ms</p></div>';
+            '<p>Duration: ' + Math.round(duration / 10000) / 100 + ' ms</p>' +
+            '<p>Argument: ' + arg + '</p></div>';
     }
 }
 

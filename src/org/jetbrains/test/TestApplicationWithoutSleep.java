@@ -27,18 +27,18 @@ import static org.jetbrains.test.CallTreeConstructor.registerStart;
 
 public class TestApplicationWithoutSleep {
     private void fun1() {
-        registerStart();
+        registerStart("");
         fun3();
         registerFinish();
     }
 
     private void fun2() {
-        registerStart();
+        registerStart("");
         registerFinish();
     }
 
     private void fun3() {
-        registerStart();
+        registerStart("");
         fun4();
         fun4();
         fun5();
@@ -46,35 +46,35 @@ public class TestApplicationWithoutSleep {
     }
 
     private void fun4() {
-        registerStart();
+        registerStart("");
         registerFinish();
     }
 
     private void fun5() {
-        registerStart();
+        registerStart("");
         fun6();
         registerFinish();
     }
 
     private void fun6() {
-        registerStart();
+        registerStart("");
         fun7();
         registerFinish();
     }
 
     private void fun7() {
-        registerStart();
+        registerStart("");
         fun8();
         registerFinish();
     }
 
     private void fun8() {
-        registerStart();
+        registerStart("");
         registerFinish();
     }
 
     public void start() {
-        registerStart();
+        registerStart("");
         fun1();
         fun2();
         registerFinish();

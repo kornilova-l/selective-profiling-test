@@ -38,7 +38,7 @@ public class DummyApplication {
     }
 
     private void abc(String s) {
-        registerStart();
+        registerStart(s);
 
         sleep();
         if (stop()) {
@@ -54,7 +54,7 @@ public class DummyApplication {
     }
 
     private void def(String s) {
-        registerStart();
+        registerStart(s);
 
         sleep();
         if (stop()) {
@@ -70,7 +70,7 @@ public class DummyApplication {
     }
 
     private void xyz(String s) {
-        registerStart();
+        registerStart(s);
 
         sleep();
         if (stop()) {

@@ -24,7 +24,7 @@ public class CallTreeConstructor {
     /**
      * Record start of method
      */
-    static void registerStart() {
+    static void registerStart(String arg) {
         long time = System.nanoTime(); // get time before synchronized block
         Thread thread = Thread.currentThread();
         String methodName = thread.getStackTrace()[2].getMethodName(); // get function which called this method
@@ -35,9 +35,9 @@ public class CallTreeConstructor {
             // I tried to separate creating call-tree (using computeIfAbsent) and adding first Node, but this added ~50ms
             CallTree callTree = threads.get(thread.hashCode()); // get tree of current thread
             if (callTree == null) { // if there is no tree for this thread
-                threads.put(thread.hashCode(), new CallTree(thread, methodName, className, time)); // create call-tree and add first node
+                threads.put(thread.hashCode(), new CallTree(thread, methodName, className, time, arg)); // create call-tree and add first node
             } else {
-                callTree.startMethod(methodName, className, time);
+                callTree.startMethod(methodName, className, time, arg);
             }
         }
     }
@@ -110,11 +110,11 @@ public class CallTreeConstructor {
          * @param className class name of first method in this call-tree
          * @param startTreadTime when first method was called
          */
-        CallTree(Thread thread, String methodName, String className, long startTreadTime) {
+        CallTree(Thread thread, String methodName, String className, long startTreadTime, String arg) {
             threadName = thread.getName();
             nodes = new LinkedList<>();
             this.startThreadTime = startTreadTime;
-            nodes.addFirst(new Node(methodName, className, startTreadTime));
+            nodes.addFirst(new Node(methodName, className, startTreadTime, arg));
         }
 
         /**
@@ -127,6 +127,7 @@ public class CallTreeConstructor {
             private boolean isFinished = false;
             private final long startTime;
             private long duration;
+            private final String arg;
 
             /**
              * Create node
@@ -134,10 +135,11 @@ public class CallTreeConstructor {
              * @param className class name of method
              * @param time when method was called
              */
-            Node(String methodName, String className, long time) {
+            Node(String methodName, String className, long time, String arg) {
                 this.methodName = methodName;
                 this.startTime = time - CallTree.this.startThreadTime;
                 this.className = className;
+                this.arg = arg;
             }
 
             // all getters are needed for exporting JSON
@@ -161,6 +163,10 @@ public class CallTreeConstructor {
                 return className;
             }
 
+            public String getArg() {
+                return arg;
+            }
+
             /**
              * add child to this node
              * @param child child
@@ -182,7 +188,7 @@ public class CallTreeConstructor {
 
             @Override
             public String toString() {
-                return methodName;
+                return methodName + "(" + arg + ")";
             }
         }
 
@@ -195,12 +201,13 @@ public class CallTreeConstructor {
          * @param className class name of called method
          * @param time when method was called
          */
-        void startMethod(String methodName, String className, long time) {
+        void startMethod(String methodName, String className, long time, String arg) {
+            Node newNode = new Node(methodName, className, time, arg);
             Node lastUnfinished = getLastUnfinished();
             if (lastUnfinished == null) {
-                nodes.addLast(new Node(methodName, className, time));
+                nodes.add(newNode);
             } else {
-                lastUnfinished.addChild(new Node(methodName, className, time));
+                lastUnfinished.addChild(newNode);
             }
         }
 

@@ -23,7 +23,7 @@ public class Main {
         service.awaitTermination(60, TimeUnit.SECONDS);
         System.out.println(CallTreeConstructor.getString()); // print to console
         // Get JSON
-        PrintWriter writer = new PrintWriter("JSON/DummyApplication3.json");
+        PrintWriter writer = new PrintWriter("JSON/DummyApplication2.json");
         writer.print(CallTreeConstructor.getJson());
         writer.close();
     }
