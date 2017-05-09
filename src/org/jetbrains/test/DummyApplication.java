@@ -2,10 +2,8 @@ package org.jetbrains.test;
 
 import java.util.List;
 import java.util.Random;
-
 import static org.jetbrains.test.CallTreeConstructor.registerFinish;
 import static org.jetbrains.test.CallTreeConstructor.registerStart;
-
 /**
  * Nikolay.Tropin
  * 18-Apr-17
@@ -33,7 +31,7 @@ public class DummyApplication {
 
     private void sleep() {
         try {
-            Thread.sleep(random.nextInt(5));
+            Thread.sleep(random.nextInt(20));
         } catch (InterruptedException ignored) {
 
         }
@@ -41,11 +39,9 @@ public class DummyApplication {
 
     private void abc(String s) {
         registerStart();
-        //your code here
 
         sleep();
         if (stop()) {
-            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -59,11 +55,9 @@ public class DummyApplication {
 
     private void def(String s) {
         registerStart();
-        //your code here
 
         sleep();
         if (stop()) {
-            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -80,7 +74,6 @@ public class DummyApplication {
 
         sleep();
         if (stop()) {
-            doFinish();
             //do nothing
         }
         else if (nextBoolean()) {
@@ -92,16 +85,8 @@ public class DummyApplication {
         registerFinish();
     }
 
-    public void doFinish() {
-        registerStart();
-        registerFinish();
-    }
-
     public void start() {
-        registerStart();
-//        doStart();
         abc(nextArg());
-        registerFinish();
     }
 }
 

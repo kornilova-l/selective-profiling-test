@@ -1,17 +1,34 @@
-@import url('https://fonts.googleapis.com/css?family=Open+Sans');
+@font-face {
+    font-family: "Gotham Pro";
+    font-weight: bold;
+    src: url(../font/GothamProBold.ttf);
+}
+
+@font-face {
+    font-family: "Menlo";
+    font-weight: normal;
+    src: url(../font/Menlo-Regular.ttf);
+}
+
 body {
-    font-family: 'Open Sans', sans-serif;
-    background-color: #f3f3f3;
+    font-family: "Gotham Pro", sans-serif;
+    font-weight: normal;
 }
 main {
     width: 700px;
-    margin: 0 auto;
     display: block;
-    margin-bottom: 100px;
+    margin: calc(50vh - 150px) auto 100px;
 }
 h1 {
     width: 100%;
     text-align: center;
+    font-family: "Gotham Pro", sans-serif;
+    font-weight: bold;
+}
+h2 {
+    padding-bottom: 10px;
+    border-bottom: solid;
+    margin-bottom: 40px;
 }
 form {
     width: 100%;
@@ -20,9 +37,8 @@ form {
 }
 section {
     background-color: white;
-    padding: 1px 25px 0;
+    padding: 0;
     margin-bottom: 30px;
-    border-radius: 10px;
 }
 .call-tree {
     position: relative;
@@ -52,20 +68,21 @@ li {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 16px;
+    font-family: Menlo, sans-serif;
+    font-size: 14px;
     color: white;
     padding: 0 0 0 2px;
 }
 .detail {
-    background-color: #eee;
-    border-radius: 5px;
-    width: 370px;
+    background-color: #222;
+    font-family: "Menlo", "Gotham Pro", sans-serif;
+    font-weight: normal;
+    color: white;
     display: none;
     position: absolute;
     pointer-events: none;
-    color: #444;
     z-index: 100;
-    padding: 5px 10px 10px;
+    padding: 10px 15px 15px;
 }
 
 .detail h3 {
@@ -75,15 +92,14 @@ li {
 }
 .detail b {
     font-size: 18px;
-    color: black;
 }
 .detail p {
     margin: 0;
     font-size: 12px;
 }
 .inputfile {
-    width: 0.1px;
-    height: 0.1px;
+    width: 0;
+    height: 0;
     opacity: 0;
     overflow: hidden;
     position: absolute;
@@ -91,16 +107,18 @@ li {
 }
 
 .inputfile + label {
-    font-size: 16px;
+    font-size: 14px;
     color: white;
-    background-color: #3d82ff;
+    background-color: #18A3FA;
     display: inline-block;
-    padding: 7px 10px;
+    padding: 15px 25px;
+    border-radius: 30px;
+    margin-bottom: 20px;
+    font-weight: bold;
 }
 
-.inputfile:focus + label,
 .inputfile + label:hover {
-    background-color: #5457FF;
+    background-color: #0887d7;
 }
 
 .inputfile + label {
@@ -109,4 +127,21 @@ li {
 
 .inputfile + label * {
     pointer-events: none;
+}
+
+footer {
+    background-color: #222;
+    color: white;
+    font-family: Menlo, sans-serif;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    padding-right: 30px;
+    /*padding: 5px 10px;*/
+}
+footer p {
+    width: 100%;
+    text-align: right;
+    margin: 5px 0;
 }
