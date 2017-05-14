@@ -7,7 +7,6 @@ kornilova203@gmail.com
 1. Java класс, формирующий дерево вызовов
 2. Экспорт данных
 3. Приложение на JavaScript для визуализации дерева
-4. Скорость работы профайлера
 
 ## Java класс, формирующий дерево вызовов
 Класс можно найти здесь: [CallTreeConstructor.java](src/org/jetbrains/test/CallTreeConstructor.java)
@@ -64,12 +63,3 @@ getJson() возвращает JSON, который включает себя в
 Деревья на скриншоте ниже построенны из DummyApplication. Здесь видно, что два потока выполнили по две задачи. Ниже есть третий поток, в котором только 1 стэк вызовов, он довольно большой, я не стала его вставлять здесь, его можно посмотреть самому, загрузив файл [JSON/DummyApplication.json](JSON/DummyApplication.json)
 
 ![скриншот из приложения, визуализирующего DummyApplication](img/DummyApplication.png)
-
-## Скорость работы профайлера
-Чтобы протестировать время выполнения, я сделала тестовый класс [TestApplicationWithoutSleep.java](src/org/jetbrains/test/TestApplicationWithoutSleep.java), в котором нет ничего, кроме вызовов методов.
-
-![скриншот из приложения, визуализирующего TestApplicationWithoutSleep](img/TestApplicationWithoutSleep.png)
-
-Если посмотреть на `Start time` у `fun1`, то видно, что задержка составила ~2 ms, это время ушло на создание нового дерева, помещение его в хеш таблицу и добавление первого узла.
-
-Последующие вызовы функции registerStart() добавляют ~0.05 ms к времени работы программы.
